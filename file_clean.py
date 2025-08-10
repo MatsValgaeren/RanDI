@@ -10,7 +10,8 @@ import subprocess
 import keyboard
 
 load_dotenv()
-folder_path = os.getenv('IMAGE_PATH')
+folder_path = r"C:\Users\matsv\Desktop\RanDI\assets\download_images"
+# folder_path = os.getenv('IMAGE_PATH')
 temp_path = os.getenv('TEMP')
 
 image_hash_map = defaultdict(list)
