@@ -4,11 +4,14 @@ import logging
 import os
 import random
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
 token = os.getenv('DISCORD_TOKEN')
+
 img_path = os.getenv('IMAGE_PATH')
+vid_path = os.getenv('VIDEO_PATH')
 elli_path = os.getenv('ELLI_PATH')
 
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
@@ -28,10 +31,12 @@ async def on_command_error(ctx, error):
 async def on_ready():
     print(f"{bot.user.name} is ready!")
     print(f"Image path: {img_path}")
+    print(f"Video path: {vid_path}")
+    print(f"Elli path: {elli_path}")
 
 @bot.command()
 async def img(ctx):
-    rand_img = get_rand_img(img_path)
+    rand_img = get_rand_img()
     if not os.path.exists(rand_img):
         await ctx.send("Image not found.")
         return
@@ -43,7 +48,7 @@ async def img(ctx):
 @bot.command()
 async def spam(ctx):
     for i in range(10):
-        rand_img = get_rand_img(img_path)
+        rand_img = get_rand_img()
         if not os.path.exists(rand_img):
             await ctx.send("Image not found.")
             return
@@ -53,21 +58,54 @@ async def spam(ctx):
             await ctx.send(file=picture)
 
 @bot.command()
+async def vid(ctx):
+    print('start')
+    rand_vid = get_rand_video()
+    if not os.path.exists(rand_vid):
+        await ctx.send("Image not found.")
+        return
+
+    with open(rand_vid, 'rb') as f:
+        picture = discord.File(f)
+        await ctx.send(file=picture)
+
+@bot.command()
 async def elli(ctx):
-    rand_img = get_rand_img(elli_path)
+    rand_img = get_rand_elli()
     if not os.path.exists(rand_img):
         await ctx.send("Image not found.")
         return
 
     with open(rand_img, 'rb') as f:
+        print('sending')
         picture = discord.File(f)
         await ctx.send(file=picture)
 
-def get_rand_img(file_path):
-    files = os.listdir(file_path)
+def get_rand_img():
+    print('opening')
+    with open('image_names.json', 'r') as f:
+        files = json.load(f)
+
+    n = len(files)
+    print('get rand')
+    rand_image = files[random.randint(0, n - 1)]
+    print(rand_image, 'send')
+    return os.path.join(img_path, rand_image)
+
+def get_rand_video():
+    with open('video_names.json', 'r') as f:
+        files = json.load(f)
+
+    n = len(files)
+    rand_video = files[random.randint(0, n - 1)]
+    return os.path.join(vid_path, rand_video)
+
+def get_rand_elli():
+    files = os.listdir(elli_path)
     n = len(files)
     rand_image = files[random.randint(0, n - 1)]
     print(rand_image)
-    return os.path.join(file_path, rand_image)
+    print(rand_image)
+    return os.path.join(elli_path, rand_image)
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
