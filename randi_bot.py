@@ -1,10 +1,13 @@
-import discord
-from discord.ext import commands
+import json
 import logging
 import os
 import random
+
 from dotenv import load_dotenv
-import json
+import discord
+from discord.ext import commands
+
+import personal_commands
 
 load_dotenv()
 
@@ -12,7 +15,7 @@ token = os.getenv('DISCORD_TOKEN')
 
 img_path = os.getenv('IMAGE_PATH')
 vid_path = os.getenv('VIDEO_PATH')
-elli_path = os.getenv('ELLI_PATH')
+
 
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
@@ -21,6 +24,8 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+personal_commands.setup(bot)
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -32,7 +37,6 @@ async def on_ready():
     print(f"{bot.user.name} is ready!")
     print(f"Image path: {img_path}")
     print(f"Video path: {vid_path}")
-    print(f"Elli path: {elli_path}")
 
 @bot.command()
 async def img(ctx):
@@ -69,18 +73,6 @@ async def vid(ctx):
         picture = discord.File(f)
         await ctx.send(file=picture)
 
-@bot.command()
-async def elli(ctx):
-    rand_img = get_rand_elli()
-    if not os.path.exists(rand_img):
-        await ctx.send("Image not found.")
-        return
-
-    with open(rand_img, 'rb') as f:
-        print('sending')
-        picture = discord.File(f)
-        await ctx.send(file=picture)
-
 def get_rand_img():
     print('opening')
     with open('image_names.json', 'r') as f:
@@ -99,13 +91,5 @@ def get_rand_video():
     n = len(files)
     rand_video = files[random.randint(0, n - 1)]
     return os.path.join(vid_path, rand_video)
-
-def get_rand_elli():
-    files = os.listdir(elli_path)
-    n = len(files)
-    rand_image = files[random.randint(0, n - 1)]
-    print(rand_image)
-    print(rand_image)
-    return os.path.join(elli_path, rand_image)
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
